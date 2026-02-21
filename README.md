@@ -6,9 +6,7 @@ A production-grade security middleware layer that wraps Large Language Models (L
 
 The system implements defense-in-depth with four distinct scanner engines on the input side and four on the output side, creating an 8-layer security perimeter around Claude (or any LLM). Each scanner operates independently, and any single flagged threat blocks the request, ensuring that attackers must bypass all layers simultaneously.
 
-This is the second project in an AI Security learning path, building directly on the Prompt Injection Detector (Project 1) and extending it into a full production security stack.
-
----
+## (NOTE: Anthropic is used as an example in this project, but you can use any llm api key and its respective dependencies.)
 
 ## Use Cases
 
@@ -61,21 +59,21 @@ User Input
 
 ### Input Scanners
 
-| Scanner | Model/Library | Detects |
-|---------|---------------|---------|
-| **Prompt Injection** | DistilBERT (fine-tuned on `deepset/prompt-injections`) | System instruction hijacking, ignore commands, role manipulation |
-| **PII Detection** | Microsoft Presidio | Names, emails, SSNs, phone numbers, credit cards, IP addresses, locations |
-| **Jailbreak Detection** | `jackhhao/jailbreak-classifier` | DAN attacks, role-play exploits, restriction bypass attempts |
-| **Toxic Content** | Detoxify | Hate speech, threats, insults, profanity, identity attacks |
+| Scanner                 | Model/Library                                          | Detects                                                                   |
+| ----------------------- | ------------------------------------------------------ | ------------------------------------------------------------------------- |
+| **Prompt Injection**    | DistilBERT (fine-tuned on `deepset/prompt-injections`) | System instruction hijacking, ignore commands, role manipulation          |
+| **PII Detection**       | Microsoft Presidio                                     | Names, emails, SSNs, phone numbers, credit cards, IP addresses, locations |
+| **Jailbreak Detection** | `jackhhao/jailbreak-classifier`                        | DAN attacks, role-play exploits, restriction bypass attempts              |
+| **Toxic Content**       | Detoxify                                               | Hate speech, threats, insults, profanity, identity attacks                |
 
 ### Output Scanners
 
-| Scanner | Purpose |
-|---------|---------|
-| **PII Leakage** | Ensures Claude doesn't expose personal information in responses |
-| **Sensitive Data** | Detects API keys, passwords, credentials, confidential patterns |
-| **Toxic Content** | Prevents harmful or abusive responses from reaching users |
-| **Policy Violations** | Catches responses that violate organizational content policies |
+| Scanner               | Purpose                                                         |
+| --------------------- | --------------------------------------------------------------- |
+| **PII Leakage**       | Ensures Claude doesn't expose personal information in responses |
+| **Sensitive Data**    | Detects API keys, passwords, credentials, confidential patterns |
+| **Toxic Content**     | Prevents harmful or abusive responses from reaching users       |
+| **Policy Violations** | Catches responses that violate organizational content policies  |
 
 ---
 
@@ -84,38 +82,42 @@ User Input
 Built on the same validated stack as Project 1. Deviations will cause compatibility issues.
 
 ### Python
-| Requirement | Version | Notes |
-|---|---|---|
-| Python | **3.11.9** | Python 3.13 is **not supported** by PyTorch. Use pyenv to manage versions. |
-| pip | 26.0.1+ | Run `pip install --upgrade pip` before installing dependencies |
+
+| Requirement | Version    | Notes                                                                      |
+| ----------- | ---------- | -------------------------------------------------------------------------- |
+| Python      | **3.11.9** | Python 3.13 is **not supported** by PyTorch. Use pyenv to manage versions. |
+| pip         | 26.0.1+    | Run `pip install --upgrade pip` before installing dependencies             |
 
 ### Core Dependencies
-| Package | Pinned Version | Why Pinned |
-|---|---|---|
-| `torch` | 2.2.2 | Compatibility with transformers and accelerate |
-| `transformers` | 4.40.2 | Avoids `LRScheduler` NameError in newer versions |
-| `accelerate` | 0.29.3 | Matched to transformers 4.40.2 |
-| `numpy` | 1.26.4 | Last stable 1.x release — numpy 2.x breaks compatibility |
-| `anthropic` | latest | Official Anthropic Python SDK |
-| `fastapi` | latest | No pinning required |
-| `uvicorn` | latest | No pinning required |
-| `presidio-analyzer` | latest | Microsoft PII detection engine |
-| `presidio-anonymizer` | latest | Companion to presidio-analyzer |
-| `detoxify` | latest | Toxic content classification |
-| `spacy` | latest | NLP backend for Presidio |
+
+| Package               | Pinned Version | Why Pinned                                               |
+| --------------------- | -------------- | -------------------------------------------------------- |
+| `torch`               | 2.2.2          | Compatibility with transformers and accelerate           |
+| `transformers`        | 4.40.2         | Avoids `LRScheduler` NameError in newer versions         |
+| `accelerate`          | 0.29.3         | Matched to transformers 4.40.2                           |
+| `numpy`               | 1.26.4         | Last stable 1.x release — numpy 2.x breaks compatibility |
+| `anthropic`           | latest         | Official Anthropic Python SDK                            |
+| `fastapi`             | latest         | No pinning required                                      |
+| `uvicorn`             | latest         | No pinning required                                      |
+| `presidio-analyzer`   | latest         | Microsoft PII detection engine                           |
+| `presidio-anonymizer` | latest         | Companion to presidio-analyzer                           |
+| `detoxify`            | latest         | Toxic content classification                             |
+| `spacy`               | latest         | NLP backend for Presidio                                 |
 
 ### Platform Notes
-| Platform | torch Install Command |
-|---|---|
-| Linux x86_64 (CPU) | `pip install torch==2.2.2 --index-url https://download.pytorch.org/whl/cpu` |
-| Windows (CPU) | `pip install torch==2.2.2 --index-url https://download.pytorch.org/whl/cpu` |
-| Apple Silicon (M1/M2/M3) | `pip install torch torchvision torchaudio` |
+
+| Platform                 | torch Install Command                                                       |
+| ------------------------ | --------------------------------------------------------------------------- |
+| Linux x86_64 (CPU)       | `pip install torch==2.2.2 --index-url https://download.pytorch.org/whl/cpu` |
+| Windows (CPU)            | `pip install torch==2.2.2 --index-url https://download.pytorch.org/whl/cpu` |
+| Apple Silicon (M1/M2/M3) | `pip install torch torchvision torchaudio`                                  |
 
 ---
 
 ## Installation
 
 ### Prerequisites
+
 - Anthropic API key (get one at [console.anthropic.com](https://console.anthropic.com))
 - Completed Project 1 (Prompt Injection Detector) to reuse the trained model
 
@@ -167,6 +169,7 @@ The API will be available at `http://localhost:8000`
 ### Endpoints
 
 #### `POST /chat` — Full Firewall Protection
+
 Screens input, calls Claude, screens output. Returns response only if both pass.
 
 ```bash
@@ -176,6 +179,7 @@ curl -X POST "http://localhost:8000/chat" \
 ```
 
 **Response (allowed):**
+
 ```json
 {
   "blocked": false,
@@ -188,6 +192,7 @@ curl -X POST "http://localhost:8000/chat" \
 ```
 
 **Response (blocked at input):**
+
 ```json
 {
   "blocked": true,
@@ -202,6 +207,7 @@ curl -X POST "http://localhost:8000/chat" \
 ---
 
 #### `POST /scan/input` — Input Analysis Only
+
 Test input scanners without calling Claude.
 
 ```bash
@@ -211,6 +217,7 @@ curl -X POST "http://localhost:8000/scan/input" \
 ```
 
 **Response:**
+
 ```json
 {
   "flagged": true,
@@ -227,6 +234,7 @@ curl -X POST "http://localhost:8000/scan/input" \
 ---
 
 #### `POST /scan/output` — Output Analysis Only
+
 Test output scanners on arbitrary text.
 
 ```bash
@@ -238,6 +246,7 @@ curl -X POST "http://localhost:8000/scan/output" \
 ---
 
 #### `GET /health` — Health Check
+
 ```bash
 curl http://localhost:8000/health
 ```
@@ -251,6 +260,7 @@ python test_firewall.py
 ```
 
 Runs automated tests against all scanner engines:
+
 ```
 ============================================================
 LLM FIREWALL TEST SUITE
@@ -300,15 +310,15 @@ llm-firewall/
 
 ## Known Issues & Fixes
 
-| Error | Cause | Fix |
-|---|---|---|
-| `No matching distribution found for torch` | Python 3.13 not supported | Switch to Python 3.11.9 via pyenv |
-| `NameError: name 'LRScheduler' is not defined` | transformers version too new | Pin to `transformers==4.40.2` |
-| `RuntimeError: Numpy is not available` | numpy 2.x breaking changes | Pin to `numpy==1.26.4` |
-| `Could not import module "api"` | Wrong directory or missing files | Run from project root, verify all files exist |
-| `AttributeError: 'ToxicScanner' object has no attribute 'threshold'` | Typo in toxic.py (`==` instead of `=`) | Fix assignment in `__init__` method |
-| `Missing en_core_web_lg` | Spacy model not downloaded | Run `python -m spacy download en_core_web_lg` |
-| `AuthenticationError` from Anthropic | API key not set | Export `ANTHROPIC_API_KEY` environment variable |
+| Error                                                                | Cause                                  | Fix                                             |
+| -------------------------------------------------------------------- | -------------------------------------- | ----------------------------------------------- |
+| `No matching distribution found for torch`                           | Python 3.13 not supported              | Switch to Python 3.11.9 via pyenv               |
+| `NameError: name 'LRScheduler' is not defined`                       | transformers version too new           | Pin to `transformers==4.40.2`                   |
+| `RuntimeError: Numpy is not available`                               | numpy 2.x breaking changes             | Pin to `numpy==1.26.4`                          |
+| `Could not import module "api"`                                      | Wrong directory or missing files       | Run from project root, verify all files exist   |
+| `AttributeError: 'ToxicScanner' object has no attribute 'threshold'` | Typo in toxic.py (`==` instead of `=`) | Fix assignment in `__init__` method             |
+| `Missing en_core_web_lg`                                             | Spacy model not downloaded             | Run `python -m spacy download en_core_web_lg`   |
+| `AuthenticationError` from Anthropic                                 | API key not set                        | Export `ANTHROPIC_API_KEY` environment variable |
 
 ---
 
@@ -326,10 +336,10 @@ def normalize_text(text: str) -> str:
     """Defend against obfuscation attacks."""
     # Unicode normalization
     text = unicodedata.normalize('NFKC', text)
-    
+
     # Remove zero-width characters
     text = re.sub(r'[\u200B-\u200D\uFEFF\u2060\u180E]', '', text)
-    
+
     # Replace Cyrillic homoglyphs with Latin equivalents
     homoglyphs = {
         'А': 'A', 'В': 'B', 'Е': 'E', 'К': 'K',
@@ -338,7 +348,7 @@ def normalize_text(text: str) -> str:
     }
     for fake, real in homoglyphs.items():
         text = text.replace(fake, real)
-    
+
     return text
 ```
 
@@ -354,6 +364,7 @@ Then call `normalize_text()` at the start of each scanner's `scan()` method.
 - **Memory**: Expect 2-4GB RAM usage with all models loaded
 
 For production:
+
 - Use GPU acceleration to reduce inference time by 5-10x
 - Deploy behind a load balancer for horizontal scaling
 - Cache scanner results for identical inputs
@@ -378,6 +389,7 @@ This is **Project 2 of 5** in an AI Security learning path:
 **Never commit your Anthropic API key to git.** Always use environment variables.
 
 Add to `.gitignore`:
+
 ```
 .env
 *.key
@@ -390,6 +402,7 @@ For team deployments, use a secrets manager (AWS Secrets Manager, HashiCorp Vaul
 ## License
 
 Educational project for learning AI Security concepts. Models and libraries used are subject to their respective licenses:
+
 - Anthropic API: [Anthropic Terms of Service](https://www.anthropic.com/legal/terms)
 - Presidio: MIT License
 - Detoxify: Apache 2.0
