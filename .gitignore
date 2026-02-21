@@ -1,0 +1,55 @@
+# Virtual environment
+venv/
+env/
+ENV/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+
+# Trained models (too large for git, copied from Project 1)
+model/
+
+# Logs
+logs/
+*.log
+
+# pyenv version file
+.python-version
+
+# HuggingFace cache
+.cache/
+
+# Environment variables and API keys
+.env
+*.key
+.api_key
+
+# Dataset files (auto-generated)
+*.csv
+
+
+# VS Code / editor settings
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Jupyter notebooks (if you add analysis later)
+.ipynb_checkpoints/
+*.ipynb
+
+# Test artifacts
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
